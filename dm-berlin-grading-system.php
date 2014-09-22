@@ -4,7 +4,7 @@
  * Plugin Name: DM Berlin Grading System
  * Plugin URI: http://designmissoula.com
  * Description: A grader for Berlin Questions.
- * Version: 1.0.5
+ * Version: 1.1.5
  * Author: Bradford Knowlton
  * Author URI: http://bradknowlton.com
  * License: GPL2
