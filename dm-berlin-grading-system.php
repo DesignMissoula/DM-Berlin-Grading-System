@@ -4,7 +4,7 @@
  * Plugin Name: DM Berlin Grading System
  * Plugin URI: http://designmissoula.com
  * Description: A grader for Berlin Questions.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Bradford Knowlton
  * Author URI: http://bradknowlton.com
  * License: GPL2
@@ -12,44 +12,44 @@
  * GitHub Branch: master
  */
 
-
-
+// change the 11 here to your form ID
+$form_id = '11';
 
 // http://www.gravityhelp.com/forums/topic/simple-calculations
-// change the 41 here to your form ID
-add_action('gform_pre_submission_41', 'ch_awesomeness_rating');
-function ch_awesomeness_rating($form) {
+
+add_action('gform_pre_submission_'.$form_id, 'dm_berlin_rating');
+function dm_berlin_rating($form) {
 
 	// set up one array for each step of the form
 	// each array contains the input IDs of the fields we want to sum on each page
 	// IDs do not need to be consecutive using this method
-	$step_1_fields = array('input_2',  'input_3',  'input_4',  'input_5',  'input_6',  'input_7',  'input_8',  'input_9',  'input_10', 'input_11');
-	$step_2_fields = array('input_14', 'input_15', 'input_16', 'input_17', 'input_18', 'input_19', 'input_20', 'input_21', 'input_22', 'input_23');
-	$step_3_fields = array('input_27', 'input_28', 'input_29', 'input_30', 'input_31', 'input_32', 'input_33', 'input_34', 'input_35', 'input_36');
+	$step_1_fields = array('input_1',  'input_2',  'input_3', 'input_4',  'input_5' );
+	$step_2_fields = array('input_6',  'input_7',  'input_8'); //,  'input_9'
+	$step_3_fields = array('input_10');
 
 	// loop through inputs for each step individually
-	$culture = 0;
+	$category_1 = 0;
 	foreach($step_1_fields as $value)
 		// add each value to $step1_score
-		$culture += rgpost($value);
+		$category_1 += rgpost($value);
 
-	$process = 0;
+	$category_2 = 0;
 	foreach($step_2_fields as $value)
 		// do the same for step 2
-		$process += rgpost($value);
+		$category_2 += rgpost($value);
 
-	$behavior = 0;
+	$category_3 = 0;
 	foreach($step_3_fields as $value)
 		// and also for step 3
-		$behavior += rgpost($value);
+		$category_3 += rgpost($value);
 
 	// total of the subtotals for each step
-	$overall = $culture + $process + $behavior;
+	$overall = $category_1 + $category_2 + $category_3;
 
 	// submit these calculated values to the form so they are stored with the entry and can be used in the confirmation
-	$_POST['input_38'] = $culture;
-	$_POST['input_39'] = $process;
-	$_POST['input_40'] = $behavior;
+	$_POST['input_38'] = $category_1;
+	$_POST['input_39'] = $category_2;
+	$_POST['input_40'] = $category_3;
 	$_POST['input_41'] = $overall;	
 
 	// be sure to return the form when we're done
@@ -57,12 +57,15 @@ function ch_awesomeness_rating($form) {
 }
 
 // http://www.gravityhelp.com/forums/topic/simple-calculations
-// change the 41 here to your form ID
-add_filter('gform_confirmation_41', 'ch_courage_confirmation', 10, 4);
-function ch_courage_confirmation($confirmation, $form, $lead, $ajax) {
+
+add_filter('gform_confirmation_'.$form_id, 'dm_berlin_confirmation', 10, 4);
+
+function dm_berlin_confirmation($confirmation, $form, $lead, $ajax) {
+
+	global $form_id;
 
 	// beginning of the confirmation message
-	$confirmation = "<a name='gf_41' class='gform_anchor' ></a><div id='gforms_confirmation_message' class='gform_confirmation_message_41' style='text-align:left;'>";
+	$confirmation = "<a name='gf_".$form_id."' class='gform_anchor' ></a><div id='gforms_confirmation_message' class='gform_confirmation_message_".$form_id."' style='text-align:left;'>";
 
 	// set the "lowest score" message as a default and change it if a higher score is achieved
 	$grading = 'This score assumes that you probably have "lack of courage" issues in all three areas of culture, process, and behavior. You’ll need to pick your battles and figure out where you can concentrate your efforts at first.';
