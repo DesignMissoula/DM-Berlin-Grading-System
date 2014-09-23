@@ -16,18 +16,38 @@
 $form_id = '11';
 
 // http://www.gravityhelp.com/forums/topic/simple-calculations
-add_filter('gform_confirmation_'.$form_id, 'dm_berlin_confirmation', 10, 4);
+// add_filter('gform_confirmation_'.$form_id, 'dm_berlin_confirmation', 10, 4);
 
-function dm_berlin_confirmation($confirmation, $form, $lead, $ajax) {
+// add_filter("gform_pre_render", "dm_berlin_confirmation");
 
-	global $form_id;
+add_filter('gform_pre_render_'.$form_id, 'dm_berlin_confirmation');
+
+function dm_berlin_confirmation($form) {
+
+	// var_dump($_POST);
+
+	global $form_id, $lead;
 	
-	$fields = GFCommon::get_fields_by_type($form, array('quiz'));
-		
-	foreach ($fields as $field) {
-                $weighted_score_enabled = rgar($field, "gquizWeightedScoreEnabled");
-                $value                  = RGFormsModel::get_lead_field_value($lead, $field);
+    $current_page = GFFormDisplay::get_current_page($form["id"]);
 
+	if ($current_page == 2){
+	
+	// $fields = GFCommon::get_fields_by_type($form, array('quiz'));
+		
+	foreach( $form['fields'] as &$field ) {
+	
+				
+				if( $field['type'] != 'quiz'){
+					continue;
+				}
+	
+				// var_dump($field);
+	
+                $weighted_score_enabled = rgar($field, "gquizWeightedScoreEnabled");
+                // $value                  = RGFormsModel::get_lead_field_value($lead, $field);
+                
+                $value = $_POST['input_'.$field['id']];
+                
                 // for checkbox inputs with multiple correct choices
                 $completely_correct = true;
 
@@ -66,6 +86,8 @@ function dm_berlin_confirmation($confirmation, $form, $lead, $ajax) {
             } // end foreach field
 	
 	
+	// var_dump($results);
+	
 	if ( ($results['1'] + $results['2'] + $results['3'] + $results['4'] + $results['5'] ) >= 2){
 		$category_1 = 1;
 	}else{
@@ -77,7 +99,8 @@ function dm_berlin_confirmation($confirmation, $form, $lead, $ajax) {
 	}else{
 		$category_2 = 0;
 	}
-	if($lead[12] && $lead[11]){
+	
+	if($lead[12] && $lead[11]){ // avoid division by 0 error
 
 		if ( $results[10] || ($lead[12] / ($lead[11] * $lead[11])) > 30 ){
 			$category_3 = 1;
@@ -101,26 +124,23 @@ function dm_berlin_confirmation($confirmation, $form, $lead, $ajax) {
 	}else if( ($category_1 + $category_2 + $category_3) == 1 ){
 		$risk = 'low';
 	}else{
-		$risk = 'none';
+		$risk = 'minimal';
 	}
 	
-	// beginning of the confirmation message
-	$confirmation = "<a name='gf_".$form_id."' class='gform_anchor' ></a><div id='gforms_confirmation_message' class='gform_confirmation_message_".$form_id."' style='text-align:left;'>";
-
-	// set the "lowest score" message as a default and change it if a higher score is achieved
-	$grading = 'This score assumes that you probably have "no risk" issues in all three areas of culture, process.';
-
-	// reset the confirmation message based on the overall score, checking for lowest scores first
-	// this will bump the message up if a higher overall score is found
-	// this could have been done with an if, else if statement as well
-	if($risk == 'high')
-		$grading = 'Very high risk, seek professional attention';
-	if($risk == 'low')
-		$grading = 'Low risk.';
+	//loop back through form fields to get html field (id 3 on my form) that we are populating with the data gathered above
+		foreach($form["fields"] as &$field)
+		{
+			//get html field
+			if ($field["id"] == 18)
+			{
+			
+				//set the field content to the html
+				$field["content"] = $risk;
+				$field['defaultValue'] = $risk;
+			}
+		}
+	} // end page check
 	
-	// append this conditional information to the confirmation text entered in the form builder
-	$confirmation .= "<strong>Overall score: " . ucwords($risk) ." risk.</strong> ". $grading;
-
-	// return the confirmation	
-	return $confirmation;
+	return $form;
+	
 }
