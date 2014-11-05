@@ -4,7 +4,7 @@
  * Plugin Name: DM Berlin Grading System
  * Plugin URI: http://designmissoula.com
  * Description: A grader for Berlin Questions.
- * Version: 1.3.5
+ * Version: 1.3.6
  * Author: Bradford Knowlton
  * Author URI: http://bradknowlton.com
  * License: GPL2
@@ -94,7 +94,7 @@ function dm_berlin_confirmation($form) {
 		$category_1 = 0;
 	}
 
-	if ( ($results[5] + $results[6] + $results[7] + $results[8] + $results[9] ) >= 2){
+	if ( ( $results['6'] + $results[7] + $results[8] ) >= 2){
 		$category_2 = 1;
 	}else{
 		$category_2 = 0;
@@ -121,10 +121,8 @@ function dm_berlin_confirmation($form) {
 	
 	if( ($category_1 + $category_2 + $category_3) >= 2 ){
 		$risk = 'high';
-	}else if( ($category_1 + $category_2 + $category_3) == 1 ){
+	}else {
 		$risk = 'low';
-	}else{
-		$risk = 'minimal';
 	}
 	
 	//loop back through form fields to get html field (id 3 on my form) that we are populating with the data gathered above
